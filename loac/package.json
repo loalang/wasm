@@ -1,0 +1,14 @@
+{
+  "devDependencies": {
+    "@wasm-tool/wasm-pack-plugin": "^1.0.1",
+    "prettier": "^1.18.2",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
+  },
+  "scripts": {
+    "build-dev": "webpack --mode development",
+    "build": "ASSET_PATH=https://loalang.xyz/ webpack --mode production",
+    "generate-index-html": "echo '<script src=\"./loa.js\"></script>' > dist/index.html",
+    "export": "rm -rf dist && yarn build && rm -rf ../loalang.gitlab.io/wasm/compiler && mv dist ../loalang.gitlab.io/wasm/compiler"
+  }
+}
