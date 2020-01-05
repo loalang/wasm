@@ -1,0 +1,159 @@
+use futures::future::try_join_all;
+use loa::server::Server as WrappedServer;
+use loa::vm::VM;
+use loa::{Source, SourceKind, URI};
+use std::error::Error;
+use std::sync::Arc;
+use wasm_bindgen::prelude::*;
+use wasm_bindgen::JsCast;
+use wasm_bindgen_futures::*;
+use web_sys::*;
+
+extern crate console_error_panic_hook;
+extern crate js_sys;
+extern crate loa;
+extern crate web_sys;
+
+extern crate futures;
+
+#[macro_use]
+extern crate serde_derive;
+
+#[derive(Deserialize, Debug)]
+#[serde(tag = "type", rename_all = "camelCase")]
+enum StdManifestEntry {
+    File {
+        name: String,
+    },
+
+    Directory {
+        name: String,
+        contents: Vec<StdManifestEntry>,
+    },
+}
+
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(msg: &str);
+}
+
+/// @internal
+/// @private
+#[wasm_bindgen(start)]
+pub fn init() {
+    console_error_panic_hook::set_once();
+}
+
+#[wasm_bindgen]
+pub struct Server {
+    server: WrappedServer,
+    vm: VM,
+}
+
+#[wasm_bindgen]
+impl Server {
+    pub async fn load() -> Result<Server, JsValue> {
+        let mut server = WrappedServer::new();
+        server.add_all(stdlib_sources().await?);
+        let mut vm = VM::new();
+        vm.eval::<()>(server.generator().generate_all().unwrap());
+        Ok(Server { server, vm })
+    }
+
+    pub fn set(&mut self, uri: &str, code: &str) {
+        self.server
+            .set(URI::Exact(uri.into()), code.into(), SourceKind::REPLLine);
+    }
+
+    pub fn evaluate(&mut self, uri: &str) -> Result<Option<String>, JsValue> {
+        let uri = URI::Exact(uri.into());
+        match self.server.diagnostics().get(&uri).and_then(|d| {
+            if d.len() == 0 {
+                None
+            } else {
+                Some(d)
+            }
+        }) {
+            Some(d) => Err(JsValue::from_serde(
+                &d.iter().map(|d| d.to_string()).collect::<Vec<_>>(),
+            )
+            .unwrap()),
+            None => {
+                let mut generator = self.server.generator();
+                match generator.generate::<()>(&uri) {
+                    Err(e) => Err(JsValue::from_str(format!("{:?}", e).as_str())),
+                    Ok(instructions) => Ok(self.vm.eval_pop::<()>(instructions).map(|o| o.to_string())),
+                }
+            }
+        }
+    }
+}
+
+async fn stdlib_sources() -> Result<Vec<Arc<Source>>, JsValue> {
+    let mut urls = vec![];
+    let prefix = String::from("https://cdn.loalang.xyz/0.1.4/std");
+    for entry in load_manifest().await? {
+        push_urls_from_entry(entry, prefix.clone(), &mut urls);
+    }
+
+    let mut sources = vec![];
+    for url in urls {
+        sources.push(load_stdlib_module_from_url(url.clone()));
+    }
+    try_join_all(sources).await
+}
+
+fn push_urls_from_entry(entry: StdManifestEntry, mut prefix: String, urls: &mut Vec<String>) {
+    match entry {
+        StdManifestEntry::File { name } => {
+            prefix.push('/');
+            prefix.push_str(name.as_str());
+            urls.push(prefix);
+        }
+
+        StdManifestEntry::Directory { name, contents } => {
+            prefix.push('/');
+            prefix.push_str(name.as_str());
+            for entry in contents {
+                push_urls_from_entry(entry, prefix.clone(), urls);
+            }
+        }
+    }
+}
+
+async fn load_manifest() -> Result<Vec<StdManifestEntry>, JsValue> {
+    let request = Request::new_with_str("https://cdn.loalang.xyz/0.1.4/std/manifest.json")?;
+
+    let window = web_sys::window().unwrap();
+    let resp_value = JsFuture::from(window.fetch_with_request(&request)).await?;
+
+    assert!(resp_value.is_instance_of::<Response>());
+    let resp: Response = resp_value.dyn_into().unwrap();
+
+    let entry = JsFuture::from(resp.json()?).await?.into_serde();
+
+    Ok(entry.map_err(|e| JsValue::from_str(e.description()))?)
+}
+
+async fn load_stdlib_module_from_url(url: String) -> Result<Arc<Source>, JsValue> {
+    let request = Request::new_with_str(&url)?;
+
+    let window = web_sys::window().unwrap();
+    let resp_value = JsFuture::from(window.fetch_with_request(&request)).await?;
+
+    // `resp_value` is a `Response` object.
+    assert!(resp_value.is_instance_of::<Response>());
+    let resp: Response = resp_value.dyn_into().unwrap();
+
+    // Convert this other `Promise` into a rust `Future`.
+    let code = JsFuture::from(resp.text()?).await?;
+
+    let source = Source::new(
+        SourceKind::Module,
+        URI::Stdlib(url["https://cdn.loalang.xyz/0.1.4/".len()..].into()),
+        code.as_string().unwrap(),
+    );
+
+    Ok(source)
+}

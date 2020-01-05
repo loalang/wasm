@@ -2,31 +2,23 @@ const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
 const path = require("path");
 
 const ASSET_PATH = process.env.ASSET_PATH || "/";
-
-const sharedWasmPackConfig = {
-  extraArgs: "--no-typescript",
-};
+const SCRIPTS = ["loac", "loavm"];
 
 module.exports = {
-  entry: {
-    loac: "./loac/src/loac.js",
-    loavm: "./loavm/src/loavm.js"
-  },
+  entry: Object.fromEntries(
+    SCRIPTS.map(name => [name, `./${name}/src/${name}.js`])
+  ),
   output: {
     filename: "[name].js",
     chunkFilename: "[name].[chunkhash].js",
     publicPath: ASSET_PATH
   },
-  plugins: [
-    new WasmPackPlugin({
-      crateDirectory: path.join(__dirname, "loac"),
-      outDir: path.join(__dirname, "loac", "gen"),
-      ...sharedWasmPackConfig
-    }),
-    new WasmPackPlugin({
-      crateDirectory: path.join(__dirname, "loavm"),
-      outDir: path.join(__dirname, "loavm", "gen"),
-      ...sharedWasmPackConfig
-    })
-  ]
+  plugins: SCRIPTS.map(
+    name =>
+      new WasmPackPlugin({
+        crateDirectory: path.join(__dirname, name),
+        outDir: path.join(__dirname, name, "gen"),
+        extraArgs: "--no-typescript"
+      })
+  )
 };

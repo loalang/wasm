@@ -9,38 +9,31 @@ function waitForDOM() {
   });
 }
 
-let run;
-let register;
-let compile;
+import("../gen").then(async loac => {
+  await waitForDOM();
 
-const loadingLoa = import("../gen").then(exports => {
-  exports.init();
-  run = exports.run;
-  register = exports.register;
-  compile = exports.compile;
-});
-
-Promise.all([waitForDOM(), loadingLoa]).then(async () => {
   const scripts = document.querySelectorAll(
     "script[type='application/loabin'], script[type='application/loa']"
   );
 
-  for (const script of scripts) {
-    if (script.src) {
-      const response = await fetch(script.src);
+  await Promise.all(
+    Array.from(scripts, async script => {
+      if (script.src) {
+        const response = await fetch(script.src);
 
-      switch (script.type) {
-        case "application/loabin":
-          run(new Uint8Array(await response.arrayBuffer()));
-          break;
-        case "application/loa":
-          register(script.src, await response.text());
-          break;
+        switch (script.type) {
+          case "application/loabin":
+            loac.run(new Uint8Array(await response.arrayBuffer()));
+            break;
+          case "application/loa":
+            loac.register(script.src, await response.text());
+            break;
+        }
+      } else {
+        loac.register("<inline>", script.innerHTML);
       }
-    } else {
-      register("<inline>", script.innerHTML);
-    }
-  }
+    })
+  );
 
-  compile();
+  loac.compile();
 });

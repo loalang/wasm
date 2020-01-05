@@ -9,7 +9,7 @@ extern "C" {
     fn log(msg: &str);
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(start)]
 pub fn init() {
     console_error_panic_hook::set_once();
 }

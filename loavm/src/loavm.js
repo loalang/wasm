@@ -9,21 +9,18 @@ function waitForDOM() {
   });
 }
 
-let run;
+import("../gen").then(async loavm => {
+  await waitForDOM();
 
-const loadingLoa = import("../gen").then(exports => {
-  exports.init();
-  run = exports.run;
-});
-
-Promise.all([waitForDOM(), loadingLoa]).then(async () => {
   const scripts = document.querySelectorAll(
     "script[type='application/loabin']"
   );
 
-  for (const script of scripts) {
-    const response = await fetch(script.src);
+  await Promise.all(
+    Array.from(scripts, async script => {
+      const response = await fetch(script.src);
 
-    run(new Uint8Array(await response.arrayBuffer()));
-  }
+      loavm.run(new Uint8Array(await response.arrayBuffer()));
+    })
+  );
 });

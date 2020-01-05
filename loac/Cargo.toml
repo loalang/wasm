@@ -1,5 +1,5 @@
 [package]
-name = "loawasm"
+name = "loac"
 version = "0.1.0"
 authors = ["Emil Broman <emil@emilbroman.me>"]
 edition = "2018"

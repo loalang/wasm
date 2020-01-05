@@ -1,5 +1,5 @@
 [package]
-name = "loavm"
+name = "loa"
 version = "0.1.0"
 authors = ["Emil Broman <emil@emilbroman.me>"]
 edition = "2018"
@@ -11,9 +11,30 @@ crate-type = ["cdylib", "rlib"]
 default = ["console_error_panic_hook"]
 
 [dependencies]
-wasm-bindgen = "0.2"
 console_error_panic_hook = { version = "0.1.1", optional = true }
 loa = { path = "../../loalang" }
+js-sys = "0.3"
+wasm-bindgen-futures = "0.4"
+serde = "1"
+serde_derive = "1"
+futures = "0.3"
+
+[dependencies.wasm-bindgen]
+version = "0.2"
+features = [
+  'serde-serialize'
+]
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+  'Headers',
+  'Request',
+  'RequestInit',
+  'RequestMode',
+  'Response',
+  'Window',
+]
 
 [profile.release]
 opt-level = "s"
