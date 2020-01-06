@@ -24,4 +24,4 @@ dist-scripts: build-scripts
 	gsutil setmeta -h "Cache-Control: public, max-age=31536000" $(BUCKET_PATH)*
 
 dist-libs: build-libs
-	cd loa/gen && yarn publish
+	cd loa/gen && yarn publish --no-git-tag-version --new-version $(VERSION) --access public

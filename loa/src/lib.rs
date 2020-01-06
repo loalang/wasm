@@ -125,7 +125,7 @@ fn push_urls_from_entry(entry: StdManifestEntry, mut prefix: String, urls: &mut 
 async fn load_manifest() -> Result<Vec<StdManifestEntry>, JsValue> {
     let request = Request::new_with_str("https://cdn.loalang.xyz/0.1.4/std/manifest.json")?;
 
-    let window = web_sys::window().unwrap();
+    let window: web_sys::Window = js_sys::global().dyn_into().unwrap();
     let resp_value = JsFuture::from(window.fetch_with_request(&request)).await?;
 
     assert!(resp_value.is_instance_of::<Response>());
@@ -139,7 +139,7 @@ async fn load_manifest() -> Result<Vec<StdManifestEntry>, JsValue> {
 async fn load_stdlib_module_from_url(url: String) -> Result<Arc<Source>, JsValue> {
     let request = Request::new_with_str(&url)?;
 
-    let window = web_sys::window().unwrap();
+    let window: web_sys::Window = js_sys::global().dyn_into().unwrap();
     let resp_value = JsFuture::from(window.fetch_with_request(&request)).await?;
 
     // `resp_value` is a `Response` object.
