@@ -2,9 +2,8 @@ const WorkerPlugin = require("worker-plugin");
 
 module.exports = {
     output: {
-        filename: "[name].js",
-        chunkFilename: "[name].[chunkhash].js",
-        globalObject: "self"
+        globalObject: "self",
+        chunkFilename: "[contenthash].[name].js"
     },
     plugins: [
         new WorkerPlugin(),

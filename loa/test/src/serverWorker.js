@@ -1,4 +1,3 @@
-
 import("../../gen").then(async ({ Server }) => {
     const server = await Server.load();
 

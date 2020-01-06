@@ -1,1 +1,1 @@
-new Worker("./worker", { type: "module" });
+new Worker("./serverWorker", { type: "module" });

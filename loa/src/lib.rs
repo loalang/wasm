@@ -123,28 +123,34 @@ fn push_urls_from_entry(entry: StdManifestEntry, mut prefix: String, urls: &mut 
 }
 
 async fn load_manifest() -> Result<Vec<StdManifestEntry>, JsValue> {
-    let request = Request::new_with_str("https://cdn.loalang.xyz/0.1.4/std/manifest.json")?;
-
-    let window: web_sys::Window = js_sys::global().dyn_into().unwrap();
-    let resp_value = JsFuture::from(window.fetch_with_request(&request)).await?;
-
-    assert!(resp_value.is_instance_of::<Response>());
-    let resp: Response = resp_value.dyn_into().unwrap();
+    let resp = fetch("https://cdn.loalang.xyz/0.1.4/std/manifest.json").await?;
 
     let entry = JsFuture::from(resp.json()?).await?.into_serde();
 
     Ok(entry.map_err(|e| JsValue::from_str(e.description()))?)
 }
 
-async fn load_stdlib_module_from_url(url: String) -> Result<Arc<Source>, JsValue> {
+async fn fetch(url: &str) -> Result<Response, JsValue> {
     let request = Request::new_with_str(&url)?;
 
-    let window: web_sys::Window = js_sys::global().dyn_into().unwrap();
-    let resp_value = JsFuture::from(window.fetch_with_request(&request)).await?;
+    let global = js_sys::global();
 
-    // `resp_value` is a `Response` object.
+    let promise = if global.constructor().name() == "Window" {
+        let window: web_sys::Window = global.dyn_into().unwrap();
+        window.fetch_with_request(&request)
+    } else {
+        let self_: web_sys::WorkerGlobalScope = global.dyn_into().unwrap();
+        self_.fetch_with_request(&request)
+    };
+
+    let resp_value = JsFuture::from(promise).await?;
+
     assert!(resp_value.is_instance_of::<Response>());
-    let resp: Response = resp_value.dyn_into().unwrap();
+    resp_value.dyn_into()
+}
+
+async fn load_stdlib_module_from_url(url: String) -> Result<Arc<Source>, JsValue> {
+    let resp = fetch(url.as_str()).await?;
 
     // Convert this other `Promise` into a rust `Future`.
     let code = JsFuture::from(resp.text()?).await?;
