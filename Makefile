@@ -11,7 +11,12 @@ build-scripts:
 	rm -rf dist && ASSET_PATH=$(ASSET_PATH) yarn webpack --mode production
 
 build-libs:
-	cd loa && rm -rf gen && wasm-pack build --release --out-dir "gen" --scope "loalang" && cd gen && yarn version --no-git-tag-version --new-version $(VERSION)
+	cd loa && \
+		rm -rf gen && \
+		wasm-pack build --release --out-dir "gen" --scope "loalang" && \
+		cd gen && \
+		yarn version --no-git-tag-version --new-version $(VERSION) && \
+		cp ../src/lib.d.ts ./loa.d.ts
 
 version:
 	echo $(VERSION)

@@ -83,8 +83,8 @@ version = "0.2.66"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "loa"
-version = "0.1.7"
+name = "loalang"
+version = "0.1.8"
 dependencies = [
  "atty 0.2.13 (registry+https://github.com/rust-lang/crates.io-index)",
  "bincode 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -102,10 +102,10 @@ dependencies = [
 
 [[package]]
 name = "loavm"
-version = "0.1.0"
+version = "0.1.8"
 dependencies = [
  "console_error_panic_hook 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "loa 0.1.7",
+ "loalang 0.1.8",
  "wasm-bindgen 0.2.53 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 

@@ -19,6 +19,8 @@ extern crate futures;
 #[macro_use]
 extern crate serde_derive;
 
+const CDN_URL: &str = concat!("https://cdn.loalang.xyz/", env!("CARGO_PKG_VERSION"), "/");
+
 #[derive(Deserialize, Debug)]
 #[serde(tag = "type", rename_all = "camelCase")]
 enum StdManifestEntry {
@@ -83,7 +85,9 @@ impl Server {
                 let mut generator = self.server.generator();
                 match generator.generate::<()>(&uri) {
                     Err(e) => Err(JsValue::from_str(format!("{:?}", e).as_str())),
-                    Ok(instructions) => Ok(self.vm.eval_pop::<()>(instructions).map(|o| o.to_string())),
+                    Ok(instructions) => {
+                        Ok(self.vm.eval_pop::<()>(instructions).map(|o| o.to_string()))
+                    }
                 }
             }
         }
@@ -92,7 +96,7 @@ impl Server {
 
 async fn stdlib_sources() -> Result<Vec<Arc<Source>>, JsValue> {
     let mut urls = vec![];
-    let prefix = String::from("https://cdn.loalang.xyz/0.1.4/std");
+    let prefix = format!("{}std", CDN_URL);
     for entry in load_manifest().await? {
         push_urls_from_entry(entry, prefix.clone(), &mut urls);
     }
@@ -123,7 +127,7 @@ fn push_urls_from_entry(entry: StdManifestEntry, mut prefix: String, urls: &mut 
 }
 
 async fn load_manifest() -> Result<Vec<StdManifestEntry>, JsValue> {
-    let resp = fetch("https://cdn.loalang.xyz/0.1.4/std/manifest.json").await?;
+    let resp = fetch(format!("{}std/manifest.json", CDN_URL).as_str()).await?;
 
     let entry = JsFuture::from(resp.json()?).await?.into_serde();
 
@@ -157,7 +161,7 @@ async fn load_stdlib_module_from_url(url: String) -> Result<Arc<Source>, JsValue
 
     let source = Source::new(
         SourceKind::Module,
-        URI::Stdlib(url["https://cdn.loalang.xyz/0.1.4/".len()..].into()),
+        URI::Stdlib(url[CDN_URL.len()..].into()),
         code.as_string().unwrap(),
     );
 

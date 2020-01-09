@@ -1,6 +1,6 @@
 [package]
 name = "loavm"
-version = "0.1.0"
+version = "0.1.8"
 authors = ["Emil Broman <emil@emilbroman.me>"]
 edition = "2018"
 
@@ -13,7 +13,7 @@ default = ["console_error_panic_hook"]
 [dependencies]
 wasm-bindgen = "0.2"
 console_error_panic_hook = { version = "0.1.1", optional = true }
-loa = { path = "../../loalang" }
+loalang = { path = "../../loalang" }
 
 [profile.release]
 opt-level = "s"
