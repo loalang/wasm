@@ -8,7 +8,8 @@ extern crate lazy_static;
 extern crate loa;
 
 use lazy_static::lazy_static;
-use loa::generation::{Generator, Instructions};
+use loa::generation::Generator;
+use loa::bytecode::BytecodeEncodingRead;
 use loa::vm::VM;
 
 #[wasm_bindgen]
@@ -27,8 +28,8 @@ pub fn init() {
 }
 
 #[wasm_bindgen]
-pub fn run(bytes: &[u8]) {
-    let instructions = loa::generation::Instructions::from_bytes(bytes).unwrap();
+pub fn run(mut bytes: &[u8]) {
+    let instructions = bytes.deserialize().unwrap();
 
     let mut vm = loa::vm::VM::new();
     if let Some(result) = vm.eval_pop::<()>(instructions) {
@@ -55,13 +56,8 @@ pub fn compile() {
 
     log(format!("{:#?}", server.diagnostics()).as_str());
 
-    let uris = server.module_cells.iter().map(|(u, _)| u).cloned().collect::<Vec<_>>();
-
     let mut generator = Generator::new(&mut server.analysis);
-    let mut instructions = Instructions::new();
-    for uri in uris {
-        instructions.extend(generator.generate::<()>(&uri).unwrap());
-    }
+    let instructions = generator.generate_all().unwrap().into();
 
     let mut vm = VM::new();
     if let Some(o) = vm.eval_pop::<()>(instructions) {

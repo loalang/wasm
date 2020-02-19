@@ -59,7 +59,7 @@ impl Server {
         let mut server = WrappedServer::new();
         server.add_all(stdlib_sources().await?);
         let mut vm = VM::new();
-        vm.eval::<()>(server.generator().generate_all().unwrap());
+        vm.eval::<()>(server.generator().generate_all().unwrap().into());
         Ok(Server { server, vm })
     }
 
@@ -83,10 +83,11 @@ impl Server {
             .unwrap()),
             None => {
                 let mut generator = self.server.generator();
-                match generator.generate::<()>(&uri) {
+                let mut assembly = loa::assembly::Assembly::new();
+                match generator.generate((), &mut assembly, &uri) {
                     Err(e) => Err(JsValue::from_str(format!("{:?}", e).as_str())),
-                    Ok(instructions) => {
-                        Ok(self.vm.eval_pop::<()>(instructions).map(|o| o.to_string()))
+                    Ok(_) => {
+                        Ok(self.vm.eval_pop::<()>(assembly.into()).map(|o| o.to_string()))
                     }
                 }
             }

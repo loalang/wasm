@@ -1,4 +1,5 @@
 use wasm_bindgen::prelude::*;
+use crate::loa::bytecode::BytecodeEncodingRead;
 
 extern crate console_error_panic_hook;
 extern crate loa;
@@ -15,8 +16,8 @@ pub fn init() {
 }
 
 #[wasm_bindgen]
-pub fn run(bytes: &[u8]) {
-    let instructions = loa::generation::Instructions::from_bytes(bytes).unwrap();
+pub fn run(mut bytes: &[u8]) {
+    let instructions = bytes.deserialize().unwrap();
 
     let mut vm = loa::vm::VM::new();
     if let Some(result) = vm.eval_pop::<()>(instructions) {
