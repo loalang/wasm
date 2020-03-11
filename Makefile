@@ -1,11 +1,19 @@
 .SILENT:
-.PHONY: build build-scripts build-libs version dist dist-scripts dist-libs
+.PHONY: build set-version build-scripts build-libs version dist dist-scripts dist-libs
 
 VERSION ?= $(shell toml get ../loalang/Cargo.toml 'package.version' | jq -r)
 ASSET_PATH=https://cdn.loalang.xyz/$(VERSION)/
 BUCKET_PATH=gs://cdn.loalang.xyz/$(VERSION)/
 
-build: build-scripts build-libs
+build: set-version build-scripts build-libs
+
+set-version:
+	sed -i .old "3s/version = \".*\"/version = \"$(VERSION)\"/" loa/Cargo.toml
+	rm loa/Cargo.toml.old
+	sed -i .old "3s/version = \".*\"/version = \"$(VERSION)\"/" loac/Cargo.toml
+	rm loac/Cargo.toml.old
+	sed -i .old "3s/version = \".*\"/version = \"$(VERSION)\"/" loavm/Cargo.toml
+	rm loavm/Cargo.toml.old
 
 build-scripts:
 	rm -rf dist && ASSET_PATH=$(ASSET_PATH) yarn webpack --mode production
