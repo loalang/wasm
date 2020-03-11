@@ -51,6 +51,7 @@ pub fn init() {
 pub struct Server {
     server: WrappedServer,
     vm: VM,
+    cursor: loa::assembly::Cursor,
 }
 
 #[wasm_bindgen]
@@ -58,9 +59,11 @@ impl Server {
     pub async fn load() -> Result<Server, JsValue> {
         let mut server = WrappedServer::new();
         server.add_all(stdlib_sources().await?);
+        let mut cursor = loa::assembly::Cursor::new();
+        let std_instructions = server.generator().generate_all().unwrap().compile(&mut cursor);
         let mut vm = VM::new();
-        vm.eval::<()>(server.generator().generate_all().unwrap().into());
-        Ok(Server { server, vm })
+        vm.eval::<()>(std_instructions);
+        Ok(Server { server, vm, cursor })
     }
 
     pub fn set(&mut self, uri: &str, code: &str) {
@@ -87,7 +90,7 @@ impl Server {
                 match generator.generate((), &mut assembly, &uri) {
                     Err(e) => Err(JsValue::from_str(format!("{:?}", e).as_str())),
                     Ok(_) => {
-                        Ok(self.vm.eval_pop::<()>(assembly.into()).map(|o| o.to_string()))
+                        Ok(self.vm.eval_pop::<()>(assembly.compile(&mut self.cursor)).map(|o| o.to_string()))
                     }
                 }
             }
