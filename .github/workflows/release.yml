@@ -1,0 +1,9 @@
+name: Release
+
+on: [push, repository_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "${{ toJson(github.event) }}"
