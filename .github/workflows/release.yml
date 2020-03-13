@@ -33,9 +33,8 @@ jobs:
           PROJECT_ID: loalang
           APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
           CLI: gsutil
-          BUCKET_PATH: gs://cdn.loalang.xyz/${{ steps.version.outputs.version }}/
         with:
-          args: -m cp -r dist/* $BUCKET_PATH
+          args: -m cp -r dist/* gs://cdn.loalang.xyz/${{ steps.version.outputs.version }}/
 
       - name: Set Content-Type to application/wasm
         uses: actions-hub/gcloud@master
@@ -43,9 +42,10 @@ jobs:
           PROJECT_ID: loalang
           APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
           CLI: gsutil
-          BUCKET_PATH: gs://cdn.loalang.xyz/${{ steps.version.outputs.version }}/
+          BUCKET_PATH: 
         with:
-          args: 'setmeta -h "Content-Type: application/wasm" ${BUCKET_PATH}*.wasm'
+          args: |
+            setmeta -h "Content-Type: application/wasm" gs://cdn.loalang.xyz/${{ steps.version.outputs.version }}/*.wasm
 
       - name: Set Cache-Control header
         uses: actions-hub/gcloud@master
@@ -53,9 +53,9 @@ jobs:
           PROJECT_ID: loalang
           APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
           CLI: gsutil
-          BUCKET_PATH: gs://cdn.loalang.xyz/${{ steps.version.outputs.version }}/
         with:
-          args: 'setmeta -h "Cache-Control: public, max-age=31536000" ${BUCKET_PATH}*'
+          args: |
+            setmeta -h "Cache-Control: public, max-age=31536000" gs://cdn.loalang.xyz/${{ steps.version.outputs.version }}/*
 
   build-libs:
     runs-on: ubuntu-latest
@@ -79,7 +79,9 @@ jobs:
             cp ../src/lib.d.ts ./loa.d.ts
 
       - name: Authenticate to NPM
-        run: echo '_authToken=${{ secrets.NPM_DEPLOY_KEY }}' > loa/gen/.yarnrc
+        uses: ./.github/actions/wasm-pack
+        with:
+          run: echo '_authToken=${{ secrets.NPM_DEPLOY_KEY }}' > loa/gen/.yarnrc
 
       - name: Deploy lib
         uses: docker://node:12
