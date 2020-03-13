@@ -1,10 +1,8 @@
 FROM node:12
 
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh /dev/stdin -y
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh /dev/stdin -y --default-toolchain nightly
 
-ENV PATH "$PATH:/root/.cargo/env"
-
-RUN rustup default nightly
+ENV PATH "$PATH:/root/.cargo/bin"
 
 RUN curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
