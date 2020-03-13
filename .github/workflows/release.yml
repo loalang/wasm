@@ -14,19 +14,14 @@ jobs:
         uses: ./.github/actions/version
 
       - name: Install dependencies
-        uses: docker://node:12-alpine
+        uses: docker://node:12
         with:
           args: yarn --pure-lockfile
 
-      - name: Install dependencies
-        uses: docker://node:12
+      - name: Build scripts
+        uses: ./.github/actions/build-scripts
         env:
           ASSET_PATH: https://cdn.loalang.xyz/${{ steps.version.outputs.version }}/
-        with:
-          args: |
-            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-            rustup default nightly
-            yarn webpack --mode production
 
 #   build-libs:
 #     runs-on: ubuntu-latest

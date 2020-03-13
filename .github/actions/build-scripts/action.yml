@@ -1,0 +1,5 @@
+name: Build scripts
+description: Build scripts for CDN with wasm-pack
+runs:
+  using: docker
+  image: Dockerfile
