@@ -43,7 +43,7 @@ jobs:
           CLI: gsutil
           BUCKET_PATH: gs://cdn.loalang.xyz/${{ steps.version.outputs.version }}/
         with:
-          args: setmeta -h "Content-Type: application/wasm" ${BUCKET_PATH}*.wasm
+          args: 'setmeta -h "Content-Type: application/wasm" ${BUCKET_PATH}*.wasm'
 
       - name: Set Cache-Control header
         uses: actions-hub/gcloud@master
