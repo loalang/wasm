@@ -1,0 +1,11 @@
+name: Wasm Pack
+description: Shell script with Rust and Yarn and Node
+inputs:
+  run:
+    required: true
+    description: The shell script to run
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    - ${{ inputs.run }}

@@ -19,9 +19,28 @@ jobs:
           args: yarn --pure-lockfile
 
       - name: Build scripts
-        uses: ./.github/actions/build-scripts
+        uses: ./.github/actions/wasm-pack
         env:
           ASSET_PATH: https://cdn.loalang.xyz/${{ steps.version.outputs.version }}/
+        with:
+          run: yarn webpack --mode production
 
-#   build-libs:
-#     runs-on: ubuntu-latest
+  build-libs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Get version
+        id: version
+        uses: ./.github/actions/version
+
+      - name: Build lib
+        uses: ./.github/actions/wasm-pack
+        env:
+          run: |
+            cd loa
+            wasm-pack build --release --out-dir gen --scope loalang
+            cd gen
+            yarn version --no-git-tag-version --new-version ${{ steps.version.outputs.version }}
+            cp ../src/lib.d.ts ./loa.d.ts
