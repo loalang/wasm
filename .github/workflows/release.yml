@@ -25,6 +25,36 @@ jobs:
         with:
           run: yarn webpack --mode production
 
+      - name: Upload scripts
+        uses: actions-hub/gcloud@master
+        env:
+          PROJECT_ID: loalang
+          APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          CLI: gsutil
+          BUCKET_PATH: gs://cdn.loalang.xyz/${{ steps.version.outputs.version }}/
+        with:
+          args: -m cp -r dist/* $BUCKET_PATH
+
+      - name: Set Content-Type: application/wasm
+        uses: actions-hub/gcloud@master
+        env:
+          PROJECT_ID: loalang
+          APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          CLI: gsutil
+          BUCKET_PATH: gs://cdn.loalang.xyz/${{ steps.version.outputs.version }}/
+        with:
+          args: setmeta -h "Content-Type: application/wasm" ${BUCKET_PATH}*.wasm
+
+      - name: Set Cache-Control header
+        uses: actions-hub/gcloud@master
+        env:
+          PROJECT_ID: loalang
+          APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          CLI: gsutil
+          BUCKET_PATH: gs://cdn.loalang.xyz/${{ steps.version.outputs.version }}/
+        with:
+          args: setmeta -h "Cache-Control: public, max-age=31536000" ${BUCKET_PATH}*
+
   build-libs:
     runs-on: ubuntu-latest
     steps:
@@ -44,3 +74,13 @@ jobs:
             cd gen
             yarn version --no-git-tag-version --new-version ${{ steps.version.outputs.version }}
             cp ../src/lib.d.ts ./loa.d.ts
+
+      - name: Authenticate to NPM
+        run: echo '_authToken=${{ secrets.NPM_DEPLOY_KEY }}' > loa/gen/.yarnrc
+
+      - name: Deploy lib
+        uses: docker://node:12
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        with:
+          args: bash -c 'cd loa/gen && yarn publish --no-git-tag-version --new-version ${VERSION} --access public'
