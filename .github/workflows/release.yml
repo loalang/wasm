@@ -35,7 +35,7 @@ jobs:
         with:
           args: -m cp -r dist/* $BUCKET_PATH
 
-      - name: Set Content-Type: application/wasm
+      - name: Set Content-Type to application/wasm
         uses: actions-hub/gcloud@master
         env:
           PROJECT_ID: loalang
