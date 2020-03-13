@@ -2,7 +2,6 @@
 
 VERSION ?= $(shell toml get ../loalang/Cargo.toml 'package.version' | jq -r)
 ASSET_PATH=https://cdn.loalang.xyz/$(VERSION)/
-BUCKET_PATH=gs://cdn.loalang.xyz/$(VERSION)/
 
 .PHONY: build
 build: build-scripts build-libs
