@@ -84,6 +84,8 @@ jobs:
           run: echo '_authToken=${{ secrets.NPM_DEPLOY_KEY }}' > loa/gen/.yarnrc
 
       - name: Deploy lib
-        uses: docker://node:12
+        uses: ./.github/actions/wasm-pack
         with:
-          args: bash -c 'cd loa/gen && yarn publish --no-git-tag-version --new-version ${{ steps.version.outputs.version }} --access public'
+          run: |
+            cd loa/gen
+            yarn publish --no-git-tag-version --new-version ${{ steps.version.outputs.version }} --access public
