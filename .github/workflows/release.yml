@@ -45,7 +45,7 @@ jobs:
           BUCKET_PATH: 
         with:
           args: |
-            setmeta -h "Content-Type: application/wasm" gs://cdn.loalang.xyz/${{ steps.version.outputs.version }}/*.wasm
+            setmeta -h "Content-Type:application/wasm" gs://cdn.loalang.xyz/${{ steps.version.outputs.version }}/*.wasm
 
       - name: Set Cache-Control header
         uses: actions-hub/gcloud@master
@@ -55,7 +55,7 @@ jobs:
           CLI: gsutil
         with:
           args: |
-            setmeta -h "Cache-Control: public, max-age=31536000" gs://cdn.loalang.xyz/${{ steps.version.outputs.version }}/*
+            setmeta -h "Cache-Control:public,max-age=31536000" gs://cdn.loalang.xyz/${{ steps.version.outputs.version }}/*
 
   build-libs:
     runs-on: ubuntu-latest
@@ -85,7 +85,5 @@ jobs:
 
       - name: Deploy lib
         uses: docker://node:12
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
         with:
-          args: bash -c 'cd loa/gen && yarn publish --no-git-tag-version --new-version ${VERSION} --access public'
+          args: bash -c 'cd loa/gen && yarn publish --no-git-tag-version --new-version ${{ steps.version.outputs.version }} --access public'
