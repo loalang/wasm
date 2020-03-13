@@ -1,6 +1,6 @@
 [package]
 name = "loa"
-version = "0.1.15"
+version = "0.1.17"
 authors = ["Emil Broman <emil@emilbroman.me>"]
 edition = "2018"
 
@@ -12,7 +12,7 @@ default = ["console_error_panic_hook"]
 
 [dependencies]
 console_error_panic_hook = { version = "0.1.1", optional = true }
-loalang = { path = "../../loalang" }
+loalang = "0.1.15"
 js-sys = "0.3"
 wasm-bindgen-futures = "0.4"
 serde = "1"

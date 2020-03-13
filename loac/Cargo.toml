@@ -1,6 +1,6 @@
 [package]
 name = "loac"
-version = "0.1.15"
+version = "0.1.17"
 authors = ["Emil Broman <emil@emilbroman.me>"]
 edition = "2018"
 
@@ -13,7 +13,7 @@ default = ["console_error_panic_hook"]
 [dependencies]
 wasm-bindgen = "0.2"
 console_error_panic_hook = { version = "0.1.1", optional = true }
-loalang = { path = "../../loalang" }
+loalang = "0.1.15"
 lazy_static = "1.4.0"
 
 [profile.release]

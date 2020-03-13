@@ -1,0 +1,30 @@
+name: Compiler Release
+
+on: [repository_dispatch]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    if: github.event.action == 'compiler-release'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set version
+        env:
+          VERSION: ${{ github.event.client_payload.version }}
+        run: |
+          sed -i "3s/version = \".*\"/version = \"$VERSION\"/" loa/Cargo.toml
+          sed -i "3s/version = \".*\"/version = \"$VERSION\"/" loac/Cargo.toml
+          sed -i "3s/version = \".*\"/version = \"$VERSION\"/" loavm/Cargo.toml
+
+      - name: Commit
+        run: |
+          git config --local user.name "Compiler Release Workflow"
+          git config --local user.email "cd@loalang.xyz"
+          git commit -am "Publish ${{ github.event.client_payload.version }}"
+
+      - name: Push
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
