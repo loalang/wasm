@@ -19,6 +19,7 @@ jobs:
           sed -i "3s/version = \".*\"/version = \"$VERSION\"/" loavm/Cargo.toml
 
       - name: Commit
+        continue-on-error: true
         run: |
           git config --local user.name "Compiler Release Workflow"
           git config --local user.email "cd@loalang.xyz"
@@ -26,5 +27,6 @@ jobs:
 
       - name: Push
         uses: ad-m/github-push-action@master
+        if: success()
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

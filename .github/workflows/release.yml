@@ -1,0 +1,29 @@
+name: Release
+
+on: [push]
+
+jobs:
+  build-scripts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Get version
+        id: version
+        uses: ./.github/actions/version
+
+      - name: Install dependencies
+        uses: docker://node:12-alpine
+        with:
+          args: yarn --pure-lockfile
+
+      - name: Install dependencies
+        uses: docker://node:12-alpine
+        env:
+          ASSET_PATH: https://cdn.loalang.xyz/${{ steps.version.outputs.version }}/
+        with:
+          args: yarn webpack --mode production
+
+  build-libs:
+    runs-on: ubuntu-latest
