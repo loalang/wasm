@@ -1,6 +1,6 @@
 [package]
 name = "loavm"
-version = "0.1.17"
+version = "0.1.18"
 authors = ["Emil Broman <emil@emilbroman.me>"]
 edition = "2018"
 
