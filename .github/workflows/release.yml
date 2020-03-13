@@ -53,7 +53,7 @@ jobs:
           CLI: gsutil
           BUCKET_PATH: gs://cdn.loalang.xyz/${{ steps.version.outputs.version }}/
         with:
-          args: setmeta -h "Cache-Control: public, max-age=31536000" ${BUCKET_PATH}*
+          args: 'setmeta -h "Cache-Control: public, max-age=31536000" ${BUCKET_PATH}*'
 
   build-libs:
     runs-on: ubuntu-latest
