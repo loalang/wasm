@@ -67,7 +67,7 @@ jobs:
 
       - name: Build lib
         uses: ./.github/actions/wasm-pack
-        env:
+        with:
           run: |
             cd loa
             wasm-pack build --release --out-dir gen --scope loalang
