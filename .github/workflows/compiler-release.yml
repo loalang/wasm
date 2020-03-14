@@ -30,3 +30,11 @@ jobs:
         if: success()
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run release workflow
+        uses: peter-evans/repository-dispatch@v1
+        if: success()
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: loalang/wasm
+          event-type: release

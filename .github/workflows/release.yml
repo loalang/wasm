@@ -1,10 +1,11 @@
 name: Release
 
-on: [push]
+on: [push, repository_dispatch]
 
 jobs:
   build-scripts:
     runs-on: ubuntu-latest
+    if: github.event.action == 'release' || github.event.action == null
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -80,6 +81,7 @@ jobs:
 
       - name: Deploy lib
         uses: ./.github/actions/wasm-pack
+        continue-on-error: true
         with:
           run: |
             cd loa/gen
