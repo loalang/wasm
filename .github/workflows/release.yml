@@ -60,6 +60,7 @@ jobs:
 
   build-libs:
     runs-on: ubuntu-latest
+    if: github.event.action == 'release' || github.event.action == null
     steps:
       - name: Checkout
         uses: actions/checkout@v2
