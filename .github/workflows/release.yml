@@ -78,14 +78,10 @@ jobs:
             yarn version --no-git-tag-version --new-version ${{ steps.version.outputs.version }}
             cp ../src/lib.d.ts ./loa.d.ts
 
-      - name: Authenticate to NPM
-        uses: ./.github/actions/wasm-pack
-        with:
-          run: echo '_authToken=${{ secrets.NPM_DEPLOY_KEY }}' > loa/gen/.yarnrc
-
       - name: Deploy lib
         uses: ./.github/actions/wasm-pack
         with:
           run: |
             cd loa/gen
+            echo '//registry.npmjs.org/:_authToken=${{ secrets.NPM_DEPLOY_KEY }}' > ~/.npmrc
             yarn publish --no-git-tag-version --new-version ${{ steps.version.outputs.version }} --access public
