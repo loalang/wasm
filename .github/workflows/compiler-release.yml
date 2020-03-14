@@ -35,6 +35,6 @@ jobs:
         uses: peter-evans/repository-dispatch@v1
         if: success()
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.NOTIFICATIONS_TOKEN }}
           repository: loalang/wasm
           event-type: release
